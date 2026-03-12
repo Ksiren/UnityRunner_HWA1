@@ -1,17 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
-    private CharacterController controller;
-    private Vector3 dir;
-    [SerializeField] private int speed;
+    //private Vector3 dir;
+    //[SerializeField] private int speed;
     [SerializeField] private int jumpForce;
-
-    [SerializeField] private PlayerInputs playerInputs;
     Rigidbody rb;
+    public bool isGrounded;
+    public bool doubleJump = false;
 
     private int LineToMove = 1;
     public float lineDistance = 4;
@@ -20,27 +21,46 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        controller = GetComponent<CharacterController>();
     }
 
-    void OnJump()
+    void OnJump_()
     {
-        rb.AddForce(Vector3.up * jumpForce);
+        if (isGrounded)
+        {
+            isGrounded = false;
+            rb.AddForce(Vector3.up * jumpForce);
+            doubleJump = true;
+        } else if (doubleJump) {
+            rb.AddForce(Vector3.up * jumpForce);
+            doubleJump = false;
+        }
+    }
+
+    void OnLeft_()
+    {
+        if (LineToMove > 0) transform.Translate(Vector3.left * lineDistance); LineToMove--;
+        //Debug.Log("ummm left&");
+    }
+
+    void OnRight_()
+    {
+        if (LineToMove < 2) transform.Translate(Vector3.right * lineDistance); LineToMove++;
+        //Debug.Log("heheh right");
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        isGrounded = true;
     }
 
     // Update is called once per frame
     private void Update()
     {
 
-        Vector3 targetPosition = transform.position.z * transform.forward + transform.position.y * transform.up;
-        if (LineToMove == 0) targetPosition = Vector3.left * lineDistance;
-        else if (LineToMove == 2) targetPosition = Vector3.right * lineDistance;
-        transform.position = targetPosition;
+        //Vector3 targetPosition = transform.position.z * transform.forward + transform.position.y * transform.up;
+        //if (LineToMove == 0) targetPosition = Vector3.left * lineDistance;
+        //else if (LineToMove == 2) targetPosition = Vector3.right * lineDistance;
+        //transform.position = targetPosition;
     }
 
-    void FixedUpdate()
-    {
-        dir.z = speed;
-        controller.Move(dir * Time.fixedDeltaTime);
-    }
 }
